@@ -180,35 +180,132 @@ function App() {
               <section className="card">
                 No pairs added yet.
               </section>
-            ) : (
-              <section className="pair-list">
-                {pairs.map((pair, index) => (
-                  <article className="card" key={index}>
-                    <h3>{pair.pairName}</h3>
-                    <p>Pair Number: {pair.pairNumber}</p>
-                    <p>Case Number: {pair.caseNumber}</p>
-                    <p>Male Parent ID: {pair.caseNumber}M</p>
-                    <p>Female Parent ID: {pair.caseNumber}F</p>
-                    <button onClick={() => editPair(index)}>Edit</button>
-                    <button onClick={() => deletePair(index)}>Delete</button>
-                  </article>
-                ))}
-              </section>
-            )}
-          </>
-        ) : (
-          <section className="welcome">
-            <h2>{active}</h2>
-            <p>This module is ready for the next development step.</p>
-            <button className="back" onClick={() => setActive("Dashboard")}>
-              ← Back to Dashboard
+ 
+) : active === "Egg Management" ? (
+  <>
+    <section className="welcome">
+      <h2>Egg Management 🥚</h2>
+      <p>Track eggs, fertility and hatching status.</p>
+    </section>
+
+    <section className="card">
+      <h2>Add New Egg</h2>
+
+      <form
+        className="pair-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const savedEggs = JSON.parse(
+            localStorage.getItem("tweetyEggs") || "[]"
+          );
+          const newEgg = {
+            eggNumber: e.target.eggNumber.value,
+            pairNumber: e.target.pairNumber.value,
+            layingDate: e.target.layingDate.value,
+            status: "Pending"
+          };
+          localStorage.setItem(
+            "tweetyEggs",
+            JSON.stringify([...savedEggs, newEgg])
+          );
+          e.target.reset();
+          window.location.reload();
+        }}
+      >
+        <label>Pair Number</label>
+        <select name="pairNumber" required>
+          <option value="">Select Pair</option>
+          {pairs.map((pair, index) => (
+            <option key={index} value={pair.pairNumber}>
+              {pair.pairNumber} - {pair.pairName}
+            </option>
+          ))}
+        </select>
+
+        <label>Egg Number</label>
+        <input
+          name="eggNumber"
+          placeholder="Example: Egg-01"
+          required
+        />
+
+        <label>Laying Date</label>
+        <input name="layingDate" type="date" required />
+
+        <button className="back" type="submit">Save Egg</button>
+      </form>
+    </section>
+
+    <h2 className="section-title">Egg List</h2>
+
+    <section className="pair-list">
+      {JSON.parse(localStorage.getItem("tweetyEggs") || "[]").map(
+        (egg, index) => (
+          <article className="card" key={index}>
+            <h3>{egg.eggNumber}</h3>
+            <p>Pair: {egg.pairNumber}</p>
+            <p>Laying Date: {egg.layingDate}</p>
+
+            <label>Status</label>
+            <select
+              value={egg.status}
+              onChange={(e) => {
+                const allEggs = JSON.parse(
+                  localStorage.getItem("tweetyEggs") || "[]"
+                );
+                allEggs[index].status = e.target.value;
+                localStorage.setItem(
+                  "tweetyEggs",
+                  JSON.stringify(allEggs)
+                );
+                window.location.reload();
+              }}
+            >
+              {[
+                "Pending",
+                "Fertile",
+                "Hatched",
+                "Infertile",
+                "Rotten",
+                "Damaged",
+                "Eaten/Lost"
+              ].map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => {
+                if (window.confirm("Delete this egg?")) {
+                  const allEggs = JSON.parse(
+                    localStorage.getItem("tweetyEggs") || "[]"
+                  );
+                  allEggs.splice(index, 1);
+                  localStorage.setItem(
+                    "tweetyEggs",
+                    JSON.stringify(allEggs)
+                  );
+                  window.location.reload();
+                }
+              }}
+            >
+              Delete
             </button>
-          </section>
-        )}
-      </main>
-    </div>
-  );
-}
+          </article>
+        )
+      )}
+    </section>
+  </>
+) : (
+  <section className="welcome">
+    <h2>{active}</h2>
+    <p>This module is ready for the next development step.</p>
+    <button className="back" onClick={() => setActive("Dashboard")}>
+      ← Back to Dashboard
+    </button>
+  </section>
+)}
+
 
 createRoot(document.getElementById("root")).render(<App />);
                   
